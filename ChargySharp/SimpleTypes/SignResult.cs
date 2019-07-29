@@ -27,12 +27,14 @@ namespace cloud.charging.apis.chargy
     public enum SignResult
     {
         Error,
+        InvalidMeasurementValue,
         UnknownCTRFormat,
         MeterNotFound,
         PrivateKeyNotFound,
         PrivateKeyInvalid,
         PublicKeyNotFound,
-        InvalidPublicKey
+        InvalidPublicKey,
+        OK
     }
 
 }

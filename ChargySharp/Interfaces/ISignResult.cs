@@ -27,6 +27,8 @@ namespace cloud.charging.apis.chargy
     public interface ISignResult
     {
         SignResult?  Status          { get; }
+        String       HashValue       { get; }
+        ISignature   Signature       { get; }
         String       ErrorMessage    { get; }
     }
 

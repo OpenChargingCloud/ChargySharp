@@ -53,9 +53,10 @@
     <Compile Include="EMHCrypt01\IEMHMeasurementValue.cs" />
     <Compile Include="EMHCrypt01\EMHCrypt01.cs" />
     <Compile Include="EMHCrypt01\IEMHCrypt01_PublicKey.cs" />
+    <Compile Include="EMHCrypt01\EMHSignature.cs" />
     <Compile Include="Interfaces\IEMobilityProvider.cs" />
     <Compile Include="Interfaces\IAuthorization.cs" />
-    <Compile Include="Interfaces\IECCSignature.cs" />
+    <Compile Include="EMHCrypt01\IEMHSignature.cs" />
     <Compile Include="Interfaces\ISignature.cs" />
     <Compile Include="Interfaces\IPublicKey.cs" />
     <Compile Include="Interfaces\ISignatureInfos.cs" />
@@ -71,10 +72,10 @@
     <Compile Include="Interfaces\IContract.cs" />
     <Compile Include="Interfaces\IChargeTransparencyRecord.cs" />
     <Compile Include="Interfaces\ISignResult.cs" />
+    <Compile Include="Signature.cs" />
     <Compile Include="SimpleTypes\Meter_Id.cs" />
     <Compile Include="SimpleTypes\OBIS.cs" />
     <Compile Include="SimpleTypes\PublicKeyFormats.cs" />
-    <Compile Include="SimpleTypes\MeterValueSignatureFormats.cs" />
     <Compile Include="SimpleTypes\SignatureFormats.cs" />
     <Compile Include="SimpleTypes\SignResult.cs" />
     <Compile Include="SimpleTypes\VerificationResult.cs" />

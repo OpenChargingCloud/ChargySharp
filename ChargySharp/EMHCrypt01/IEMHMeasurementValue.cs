@@ -32,4 +32,12 @@ namespace cloud.charging.apis.chargy
         String LogBookIndex    { get; }
     }
 
+    public interface IEMHMeasurementValue2 : IMeasurementValue2
+    {
+        String InfoStatus      { get; }
+        UInt32 SecondsIndex    { get; }
+        String PaginationId    { get; }
+        String LogBookIndex    { get; }
+    }
+
 }

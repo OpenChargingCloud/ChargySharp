@@ -29,12 +29,25 @@ namespace cloud.charging.apis.chargy
     {
 
         IMeasurement             Measurement     { get; set; }
-        ACrypt                   Method          { get; }
-        IVerificationResult      Result          { get; set; }
-
         DateTime                 Timestamp       { get; }
         UInt64                   Value           { get; }
+        ACrypt                   Method          { get; }
         IEnumerable<ISignature>  Signatures      { get; }
+
+        IVerificationResult      Result          { get; set; }
+
+    }
+
+    public interface IMeasurementValue2
+    {
+
+        IMeasurement      Measurement     { get; set; }
+        DateTime          Timestamp       { get; }
+        UInt64            Value           { get; }
+        ACrypt            Method          { get; }
+
+        ISignResult       Status          { get; set; }
+        List<ISignature>  Signatures      { get; set; }
 
     }
 

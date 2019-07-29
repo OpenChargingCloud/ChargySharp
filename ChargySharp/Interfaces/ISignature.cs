@@ -27,12 +27,16 @@ namespace cloud.charging.apis.chargy
 
     public interface ISignature
     {
-
         String                   Algorithm        { get; }
         SignatureFormats         Format           { get; }
-        String                   PreviousValue    { get; }
         String                   Value            { get; }
-
+        String                   PreviousValue    { get; }
     }
+
+    //public interface ISignature2 : ISignature
+    //{
+    //    new String               Value            { get; set; }
+    //    new String               PreviousValue    { get; set; }
+    //}
 
 }

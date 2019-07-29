@@ -45,10 +45,8 @@ namespace cloud.charging.apis.chargy
         String           PublicKeyFormat                  { get; }
         //String           PublicKeySignatures              { get; }
 
-        IECCSignature    Signature                        { get; }
-
         String           SHA256Value                      { get; }
-
+        IEMHSignature    EMHSignature                     { get; }
 
     }
 
@@ -89,10 +87,16 @@ namespace cloud.charging.apis.chargy
 
         public String               PublicKeySignatures            { get; }
 
-        public IECCSignature        Signature                      { get; }
-
 
         public String               SHA256Value                    { get; set; }
+
+        public String               HashValue
+            => SHA256Value;
+
+        public IEMHSignature        EMHSignature                   { get; set; }
+
+        public ISignature           Signature
+            => EMHSignature;
 
         public SignResult?          Status                         { get; set; }
 
@@ -116,9 +120,9 @@ namespace cloud.charging.apis.chargy
                              String               PublicKey                           = null,
                              String               PublicKeyFormat                     = null,
                              String               PublicKeySignatures                 = null,
-                             IECCSignature        Signature                           = null,
 
                              String               SHA256value                         = null,
+                             IEMHSignature        EMHSignature                        = null,
                              SignResult?          Status                              = null,
                              String               ErrorMessage                        = null)
         {
@@ -140,9 +144,9 @@ namespace cloud.charging.apis.chargy
             this.PublicKey                     = PublicKey;
             this.PublicKeyFormat               = PublicKeyFormat;
             this.PublicKeySignatures           = PublicKeySignatures;
-            this.Signature                     = Signature;
 
             this.SHA256Value                   = SHA256value;
+            this.EMHSignature                  = EMHSignature;
             this.Status                        = Status;
             this.ErrorMessage                  = ErrorMessage;
 
@@ -161,9 +165,23 @@ namespace cloud.charging.apis.chargy
             return this;
         }
 
-        public EMHSignResult SetStatus(SignResult Status)
+        public EMHSignResult SetStatus(SignResult  Status)
         {
             this.Status = Status;
+            return this;
+        }
+
+        public EMHSignResult SetSignatureValue(IEMHSignature EMHSignature)
+        {
+            this.EMHSignature = EMHSignature;
+            return this;
+        }
+
+        public EMHSignResult SetSignatureValue(SignResult     Status,
+                                               IEMHSignature  EMHSignature)
+        {
+            this.Status        = Status;
+            this.EMHSignature  = EMHSignature;
             return this;
         }
 

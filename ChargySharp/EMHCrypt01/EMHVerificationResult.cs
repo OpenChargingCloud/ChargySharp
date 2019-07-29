@@ -27,7 +27,7 @@ namespace cloud.charging.apis.chargy
     public interface IEMHVerificationResult : IVerificationResult
     {
 
-        Meter_Id?  MeterId                          { get; }
+        Meter_Id?        MeterId                          { get; }
         IMeter           Meter                            { get; }
         DateTime?        Timestamp                        { get; }
         String           InfoStatus                       { get; }
@@ -45,7 +45,7 @@ namespace cloud.charging.apis.chargy
         String           PublicKeyFormat                  { get; }
         //String           PublicKeySignatures              { get; }
 
-        IECCSignature    Signature                        { get; }
+        IEMHSignature    Signature                        { get; }
 
         String           SHA256Value                      { get; }
 
@@ -89,7 +89,7 @@ namespace cloud.charging.apis.chargy
 
         public String               PublicKeySignatures            { get; }
 
-        public IECCSignature        Signature                      { get; }
+        public IEMHSignature        Signature                      { get; }
 
 
         public String               SHA256Value                    { get; set; }
@@ -100,27 +100,27 @@ namespace cloud.charging.apis.chargy
 
 
         public EMHVerificationResult(Meter_Id?            MeterId                             = null,
-                                IMeter               Meter                               = null,
-                                DateTime?            Timestamp                           = null,
-                                String               InfoStatus                          = null,
-                                UInt32?              SecondsIndex                        = null,
-                                String               PaginationId                        = null,
-                                OBIS?                OBIS                                = null,
-                                Int32?               UnitEncoded                         = null,
-                                Int32?               Scale                               = null,
-                                UInt64?              Value                               = null,
-                                String               LogBookIndex                        = null,
-                                String               AuthorizationStart                  = null,
-                                String               AuthorizationStop                   = null,
-                                DateTime?            AuthorizationStartTimestamp         = null,
-                                String               PublicKey                           = null,
-                                String               PublicKeyFormat                     = null,
-                                String               PublicKeySignatures                 = null,
-                                IECCSignature        Signature                           = null,
+                                     IMeter               Meter                               = null,
+                                     DateTime?            Timestamp                           = null,
+                                     String               InfoStatus                          = null,
+                                     UInt32?              SecondsIndex                        = null,
+                                     String               PaginationId                        = null,
+                                     OBIS?                OBIS                                = null,
+                                     Int32?               UnitEncoded                         = null,
+                                     Int32?               Scale                               = null,
+                                     UInt64?              Value                               = null,
+                                     String               LogBookIndex                        = null,
+                                     String               AuthorizationStart                  = null,
+                                     String               AuthorizationStop                   = null,
+                                     DateTime?            AuthorizationStartTimestamp         = null,
+                                     String               PublicKey                           = null,
+                                     String               PublicKeyFormat                     = null,
+                                     String               PublicKeySignatures                 = null,
+                                     IEMHSignature        Signature                           = null,
 
-                                String               SHA256value                         = null,
-                                VerificationResult?  Status                              = null,
-                                String               ErrorMessage                        = null)
+                                     String               SHA256value                         = null,
+                                     VerificationResult?  Status                              = null,
+                                     String               ErrorMessage                        = null)
         {
 
             this.MeterId                       = MeterId;
@@ -174,7 +174,7 @@ namespace cloud.charging.apis.chargy
         }
 
         public EMHVerificationResult SetError(VerificationResult  Status,
-                                         String              ErrorMessage)
+                                              String              ErrorMessage)
         {
             this.Status       = Status;
             this.ErrorMessage = ErrorMessage;

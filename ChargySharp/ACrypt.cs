@@ -52,11 +52,17 @@ namespace cloud.charging.apis.chargy
         #endregion
 
 
+        public abstract ISignResult SignChargingSession(IChargingSession    ChargingSession,
+                                                        Byte[]              PrivateKey,
+                                                        SignatureFormats    SignatureFormat = SignatureFormats.DER);
+
+        public abstract ISignResult SignMeasurement    (IMeasurementValue2  MeasurementValue,
+                                                        Byte[]              PrivateKey,
+                                                        SignatureFormats    SignatureFormat = SignatureFormats.DER);
+
+
         public abstract ISessionCryptoResult VerifyChargingSession(IChargingSession ChargingSession);
 
-        public abstract ISignResult SignMeasurement(IMeasurementValue  MeasurementValue,
-                                                    Byte[]             PrivateKey,
-                                                    Byte[]             PublicKey);
 
         public abstract IVerificationResult VerifyMeasurement(IMeasurementValue measurementValue);
 

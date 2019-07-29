@@ -25,12 +25,20 @@ using System.Collections.Generic;
 namespace cloud.charging.apis.chargy
 {
 
-    public interface IECCSignature : ISignature
+    public interface IEMHSignature : ISignature
     {
 
         String  R    { get; }
         String  S    { get; }
 
     }
+
+    //public interface IECCSignature2 : ISignature2
+    //{
+
+    //    String R { get; }
+    //    String S { get; }
+
+    //}
 
 }

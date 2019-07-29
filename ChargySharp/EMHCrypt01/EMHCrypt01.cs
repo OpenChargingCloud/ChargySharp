@@ -188,14 +188,36 @@ namespace cloud.charging.apis.chargy
         #endregion
 
 
+        #region SignChargingSession(ChargingSession,  PrivateKey, SignatureFormat = SignatureFormats.DER)
 
-        public override ISignResult SignMeasurement(IMeasurementValue  MeasurementValue,
-                                                    Byte[]             PrivateKey,
-                                                    Byte[]             PublicKey)
+        public override ISignResult SignChargingSession(IChargingSession  ChargingSession,
+                                                        Byte[]            PrivateKey,
+                                                        SignatureFormats  SignatureFormat = SignatureFormats.DER)
+        {
+            return null;
+        }
+
+        #endregion
+
+        #region SignMeasurement    (MeasurementValue, PrivateKey, SignatureFormat = SignatureFormats.DER)
+
+        public override ISignResult SignMeasurement(IMeasurementValue2  MeasurementValue,
+                                                    Byte[]              PrivateKey,
+                                                    SignatureFormats    SignatureFormat = SignatureFormats.DER)
         {
 
             try
             {
+
+                #region Check MeasurementValue
+
+                if (MeasurementValue == null)
+                    return new EMHSignResult(Status: SignResult.InvalidMeasurementValue);
+
+                if (!(MeasurementValue is IEMHMeasurementValue2 EMHMeasurementValue))
+                    return new EMHSignResult(Status: SignResult.InvalidMeasurementValue);
+
+                #endregion
 
                 #region Parse PrivateKey
 
@@ -213,75 +235,96 @@ namespace cloud.charging.apis.chargy
 
                 #endregion
 
-                #region Parse PublicKey
 
-                ECPublicKeyParameters EMHPublicKey = null;
+                var cryptoBuffer  = new Byte[320];
 
-                try
+                var signResult    = new EMHSignResult(
+
+                    MeterId:                      cryptoBuffer.SetHex        (EMHMeasurementValue.Measurement.MeterId,                                        0),
+                    Timestamp:                    cryptoBuffer.SetTimestamp32(EMHMeasurementValue.Timestamp,                                                 10),
+                    InfoStatus:                   cryptoBuffer.SetHex        (EMHMeasurementValue.InfoStatus,                                                14, false),
+                    SecondsIndex:                 cryptoBuffer.SetUInt32     (EMHMeasurementValue.SecondsIndex,                                              15, true),
+                    PaginationId:                 cryptoBuffer.SetHex        (EMHMeasurementValue.PaginationId,                                              19, true),
+                    OBIS:                         cryptoBuffer.SetHex        (EMHMeasurementValue.Measurement.OBIS,                                          23, false),
+                    UnitEncoded:                  cryptoBuffer.SetInt8       (EMHMeasurementValue.Measurement.UnitEncoded,                                   29),
+                    Scale:                        cryptoBuffer.SetInt8       (EMHMeasurementValue.Measurement.Scale,                                         30),
+                    Value:                        cryptoBuffer.SetUInt64     (EMHMeasurementValue.Value,                                                     31, true),
+                    LogBookIndex:                 cryptoBuffer.SetHex        (EMHMeasurementValue.LogBookIndex,                                              39, false),
+                    AuthorizationStart:           cryptoBuffer.SetText       (EMHMeasurementValue.Measurement.ChargingSession.AuthorizationStart.Id,         41),
+                    AuthorizationStartTimestamp:  cryptoBuffer.SetTimestamp32(EMHMeasurementValue.Measurement.ChargingSession.AuthorizationStart.Timestamp, 169),
+
+                    Status:                       SignResult.InvalidMeasurementValue);
+
+
+                var SHA256Hash = new Byte[0];
+
+                // Only the first 24 bytes/192 bits are used!
+                using (var SHA256 = new SHA256Managed())
                 {
-                    EMHPublicKey = ParsePublicKey(PublicKey);
+
+                    SHA256Hash = SHA256.ComputeHash(cryptoBuffer);
+
+                    signResult.SHA256Value = SHA256Hash.ToHexString().
+                                                        Substring(0, 48);
+
                 }
-                catch (Exception e)
+
+                var meter = GetMeter(MeasurementValue.Measurement.MeterId);
+                if (meter != null)
                 {
-                    return new EMHSignResult(Status:        SignResult.InvalidPublicKey,
-                                             ErrorMessage:  e.Message);
+
+                    signResult.SetMeter(meter);
+
+                    var publicKey = meter.PublicKeys.FirstOrDefault();
+                    if (publicKey != null && (publicKey.Value?.Trim().IsNotNullOrEmpty() == true))
+                    {
+
+                        try
+                        {
+
+                            var EMHPublicKey = ParsePublicKey(publicKey.Value?.Trim());
+
+                            //var bVerifier   = SignerUtilities.GetSigner("SHA-256withECDSA");
+                            var signer      = SignerUtilities.GetSigner("NONEwithECDSA");
+                            signer.Init(true, EMHPrivateKey);
+                            signer.BlockUpdate(SHA256Hash, 0, 24);
+
+                            var signature = new EMHSignature(signer.AlgorithmName,
+                                                             SignatureFormat, // ToDo: Fix signature format selection!
+                                                             signer.GenerateSignature().ToHexString());
+
+                            MeasurementValue.Signatures.Add(signature);
+                            signResult.SetSignatureValue(SignResult.OK, signature);
+
+                        }
+                        catch (Exception e)
+                        {
+                            signResult.SetError(Status:        SignResult.InvalidPublicKey,
+                                                ErrorMessage:  e.Message);
+                        }
+
+                    }
+                    else
+                        signResult.SetStatus(SignResult.PublicKeyNotFound);
+
                 }
-
-                #endregion
-
-
-            }
-            catch (Exception e)
-            {
-
-            }
-
-            return null;
-
-        }
-
-
-        #region DecodeStatus(StatusValue)
-
-        public IEnumerable<String> DecodeStatus(String StatusValue)
-        {
-
-            var statusArray = new List<String>();
-
-            try
-            {
-
-                var status = Int32.Parse(StatusValue);
-
-                if ((status &  1) ==  1)
-                    statusArray.Add("Fehler erkannt");
-
-                if ((status &  2) ==  2)
-                    statusArray.Add("Synchrone Messwertübermittlung");
-
-                // Bit 3 is reserved!
-
-                if ((status &  8) ==  8)
-                    statusArray.Add("System-Uhr ist synchron");
                 else
-                    statusArray.Add("System-Uhr ist nicht synchron");
+                    signResult.SetStatus(SignResult.MeterNotFound);
 
-                if ((status & 16) == 16)
-                    statusArray.Add("Rücklaufsperre aktiv");
 
-                if ((status & 32) == 32)
-                    statusArray.Add("Energierichtung -A");
 
-                if ((status & 64) == 64)
-                    statusArray.Add("Magnetfeld erkannt");
+
+
+
+
+                return signResult;
 
             }
             catch (Exception e)
             {
-                statusArray.Add("Invalid status!");
+                return new EMHSignResult(Status:        SignResult.InvalidMeasurementValue,
+                                         ErrorMessage:  e.Message);
             }
-
-            return statusArray;
 
         }
 
@@ -340,7 +383,7 @@ namespace cloud.charging.apis.chargy
 
         #endregion
 
-        #region VerifyMeasurement(MeasurementValue)
+        #region VerifyMeasurement    (MeasurementValue)
 
         public override IVerificationResult VerifyMeasurement(IMeasurementValue MeasurementValue)
         {
@@ -465,7 +508,7 @@ namespace cloud.charging.apis.chargy
                                     catch (Exception e)
                                     {
                                         verificationResult.SetError(VerificationResult.InvalidSignature,
-                                                              e.Message);
+                                                                    e.Message);
                                     }
 
                                 }
@@ -503,6 +546,55 @@ namespace cloud.charging.apis.chargy
                 return MeasurementValue.Result = new EMHVerificationResult(Status:        VerificationResult.UnknownCTRFormat,
                                                                            ErrorMessage:  e.Message);
             }
+
+        }
+
+        #endregion
+
+
+        // Helper
+
+        #region DecodeStatus(StatusValue)
+
+        public IEnumerable<String> DecodeStatus(String StatusValue)
+        {
+
+            var statusArray = new List<String>();
+
+            try
+            {
+
+                var status = Int32.Parse(StatusValue);
+
+                if ((status &  1) ==  1)
+                    statusArray.Add("Fehler erkannt");
+
+                if ((status &  2) ==  2)
+                    statusArray.Add("Synchrone Messwertübermittlung");
+
+                // Bit 3 is reserved!
+
+                if ((status &  8) ==  8)
+                    statusArray.Add("System-Uhr ist synchron");
+                else
+                    statusArray.Add("System-Uhr ist nicht synchron");
+
+                if ((status & 16) == 16)
+                    statusArray.Add("Rücklaufsperre aktiv");
+
+                if ((status & 32) == 32)
+                    statusArray.Add("Energierichtung -A");
+
+                if ((status & 64) == 64)
+                    statusArray.Add("Magnetfeld erkannt");
+
+            }
+            catch (Exception e)
+            {
+                statusArray.Add("Invalid status!");
+            }
+
+            return statusArray;
 
         }
 
