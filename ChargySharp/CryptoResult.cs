@@ -24,7 +24,7 @@ using System;
 namespace cloud.charging.apis.chargy
 {
 
-    public class CryptoResult : ICryptoResult
+    public class CryptoResult : IVerificationResult
     {
 
         public VerificationResult?  Status          { get; set; }

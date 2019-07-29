@@ -24,10 +24,10 @@ using System;
 namespace cloud.charging.apis.chargy
 {
 
-    public interface ICryptoResult
+    public interface ISignResult
     {
-        VerificationResult?  Status          { get; }
-        String               ErrorMessage    { get; }
+        SignResult?  Status          { get; }
+        String       ErrorMessage    { get; }
     }
 
 }

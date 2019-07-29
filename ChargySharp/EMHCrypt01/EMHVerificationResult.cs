@@ -24,7 +24,7 @@ using System;
 namespace cloud.charging.apis.chargy
 {
 
-    public interface IEMHCrypt01Result : ICryptoResult
+    public interface IEMHVerificationResult : IVerificationResult
     {
 
         Meter_Id?  MeterId                          { get; }
@@ -52,7 +52,7 @@ namespace cloud.charging.apis.chargy
 
     }
 
-    public class EMHCrypt01Result : IEMHCrypt01Result
+    public class EMHVerificationResult : IEMHVerificationResult
     {
 
         public Meter_Id?            MeterId                        { get; }
@@ -99,7 +99,7 @@ namespace cloud.charging.apis.chargy
         public String               ErrorMessage                   { get; set; }
 
 
-        public EMHCrypt01Result(Meter_Id?            MeterId                             = null,
+        public EMHVerificationResult(Meter_Id?            MeterId                             = null,
                                 IMeter               Meter                               = null,
                                 DateTime?            Timestamp                           = null,
                                 String               InfoStatus                          = null,
@@ -149,31 +149,31 @@ namespace cloud.charging.apis.chargy
         }
 
 
-        public EMHCrypt01Result SetMeter(IMeter Meter)
+        public EMHVerificationResult SetMeter(IMeter Meter)
         {
             this.Meter = Meter;
             return this;
         }
 
-        public EMHCrypt01Result SetSHA256Value(String SHA256Value)
+        public EMHVerificationResult SetSHA256Value(String SHA256Value)
         {
             this.SHA256Value = SHA256Value;
             return this;
         }
 
-        public EMHCrypt01Result SetStatus(VerificationResult Status)
+        public EMHVerificationResult SetStatus(VerificationResult Status)
         {
             this.Status = Status;
             return this;
         }
 
-        public EMHCrypt01Result SetErrorMessage(String ErrorMessage)
+        public EMHVerificationResult SetErrorMessage(String ErrorMessage)
         {
             this.ErrorMessage = ErrorMessage;
             return this;
         }
 
-        public EMHCrypt01Result SetError(VerificationResult  Status,
+        public EMHVerificationResult SetError(VerificationResult  Status,
                                          String              ErrorMessage)
         {
             this.Status       = Status;

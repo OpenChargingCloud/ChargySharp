@@ -189,11 +189,55 @@ namespace cloud.charging.apis.chargy
 
 
 
-        public override ICryptoResult SignMeasurement(IMeasurementValue  measurementValue,
-                                                      Object             privateKey,
-                                                      Object             publicKey)
+        public override ISignResult SignMeasurement(IMeasurementValue  MeasurementValue,
+                                                    Byte[]             PrivateKey,
+                                                    Byte[]             PublicKey)
         {
+
+            try
+            {
+
+                #region Parse PrivateKey
+
+                ECPrivateKeyParameters EMHPrivateKey = null;
+
+                try
+                {
+                    EMHPrivateKey  = ParsePrivateKey(PrivateKey);
+                }
+                catch (Exception e)
+                {
+                    return new EMHSignResult(Status:        SignResult.InvalidPublicKey,
+                                             ErrorMessage:  e.Message);
+                }
+
+                #endregion
+
+                #region Parse PublicKey
+
+                ECPublicKeyParameters EMHPublicKey = null;
+
+                try
+                {
+                    EMHPublicKey = ParsePublicKey(PublicKey);
+                }
+                catch (Exception e)
+                {
+                    return new EMHSignResult(Status:        SignResult.InvalidPublicKey,
+                                             ErrorMessage:  e.Message);
+                }
+
+                #endregion
+
+
+            }
+            catch (Exception e)
+            {
+
+            }
+
             return null;
+
         }
 
 
@@ -298,7 +342,7 @@ namespace cloud.charging.apis.chargy
 
         #region VerifyMeasurement(MeasurementValue)
 
-        public override ICryptoResult VerifyMeasurement(IMeasurementValue MeasurementValue)
+        public override IVerificationResult VerifyMeasurement(IMeasurementValue MeasurementValue)
         {
 
             if (MeasurementValue is IEMHMeasurementValue EMHMeasurementValue)
@@ -308,7 +352,7 @@ namespace cloud.charging.apis.chargy
 
         }
 
-        public ICryptoResult VerifyMeasurement(IEMHMeasurementValue MeasurementValue)
+        public IVerificationResult VerifyMeasurement(IEMHMeasurementValue MeasurementValue)
         {
 
             try
@@ -323,7 +367,7 @@ namespace cloud.charging.apis.chargy
 
                 var cryptoBuffer  = new Byte[320];
 
-                var cryptoResult = new EMHCrypt01Result(
+                var cryptoResult = new EMHVerificationResult(
 
                     MeterId:                      cryptoBuffer.SetHex        (MeasurementValue.Measurement.MeterId,                                        0),
                     Timestamp:                    cryptoBuffer.SetTimestamp32(MeasurementValue.Timestamp,                                                 10),
@@ -458,11 +502,11 @@ namespace cloud.charging.apis.chargy
             }
             catch (Exception e)
             {
-                return new EMHCrypt01Result(Status:        VerificationResult.UnknownCTRFormat,
+                return new EMHVerificationResult(Status:        VerificationResult.UnknownCTRFormat,
                                             ErrorMessage:  e.Message);
             }
 
-            return new EMHCrypt01Result(Status:  VerificationResult.UnknownCTRFormat);
+            return new EMHVerificationResult(Status:  VerificationResult.UnknownCTRFormat);
 
         }
 

@@ -18,24 +18,16 @@
 #region Usings
 
 using System;
-using System.Collections.Generic;
 
 #endregion
 
 namespace cloud.charging.apis.chargy
 {
 
-    public interface IMeasurementValue
+    public interface IVerificationResult
     {
-
-        IMeasurement             Measurement     { get; set; }
-        ACrypt                   Method          { get; }
-        IVerificationResult            Result          { get; }
-
-        DateTime                 Timestamp       { get; }
-        UInt64                   Value           { get; }
-        IEnumerable<ISignature>  Signatures      { get; }
-
+        VerificationResult?  Status          { get; }
+        String               ErrorMessage    { get; }
     }
 
 }

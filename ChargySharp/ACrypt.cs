@@ -54,11 +54,11 @@ namespace cloud.charging.apis.chargy
 
         public abstract ISessionCryptoResult VerifyChargingSession(IChargingSession ChargingSession);
 
-        public abstract ICryptoResult SignMeasurement(IMeasurementValue  measurementValue,
-                                                      Object             privateKey,
-                                                      Object             publicKey);
+        public abstract ISignResult SignMeasurement(IMeasurementValue  MeasurementValue,
+                                                    Byte[]             PrivateKey,
+                                                    Byte[]             PublicKey);
 
-        public abstract ICryptoResult VerifyMeasurement(IMeasurementValue measurementValue);
+        public abstract IVerificationResult VerifyMeasurement(IMeasurementValue measurementValue);
 
 
     }
