@@ -33,7 +33,7 @@ namespace cloud.charging.apis.chargy
         ICryptoResult            Result          { get; }
 
         DateTime                 Timestamp       { get; }
-        Int32                    Value           { get; }
+        UInt64                   Value           { get; }
         IEnumerable<ISignature>  Signatures      { get; }
 
     }

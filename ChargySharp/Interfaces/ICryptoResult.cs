@@ -26,7 +26,8 @@ namespace cloud.charging.apis.chargy
 
     public interface ICryptoResult
     {
-        VerificationResult Status { get; }
+        VerificationResult?  Status          { get; }
+        String               ErrorMessage    { get; }
     }
 
 }

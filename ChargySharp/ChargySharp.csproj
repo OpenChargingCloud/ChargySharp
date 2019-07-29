@@ -45,6 +45,7 @@
   <ItemGroup>
     <Compile Include="ChargyLib.cs" />
     <Compile Include="EMHCrypt01\EMHSessionCryptoResult.cs" />
+    <Compile Include="CryptoResult.cs" />
     <Compile Include="EMHCrypt01\IEMHCrypt01Result.cs" />
     <Compile Include="EMHCrypt01\IEMHMeasurementValue.cs" />
     <Compile Include="EMHCrypt01\EMHCrypt01.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Interfaces\IChargingStationOperator.cs" />
     <Compile Include="Interfaces\IContract.cs" />
     <Compile Include="Interfaces\IChargeTransparencyRecord.cs" />
+    <Compile Include="SimpleTypes\Meter_Id.cs" />
     <Compile Include="SimpleTypes\OBIS.cs" />
     <Compile Include="SimpleTypes\SignatureFormats.cs" />
     <Compile Include="SimpleTypes\VerificationResult.cs" />

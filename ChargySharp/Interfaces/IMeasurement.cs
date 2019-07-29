@@ -32,7 +32,7 @@ namespace cloud.charging.apis.chargy
         String                          Context              { get; }
         //I18NString                      Description          { get; }
         IChargingSession                ChargingSession      { get; set; }
-        String                          EnergyMeterId        { get; }
+        Meter_Id                  MeterId        { get; }
         String                          Name                 { get; }
         OBIS                            OBIS                 { get; }
         String                          Unit                 { get; }

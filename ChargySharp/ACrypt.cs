@@ -26,17 +26,17 @@ namespace cloud.charging.apis.chargy
 
     public abstract class ACrypt {
 
-        public String Description { get; }
-        //public readonly GetMeter:                      GetMeterFunc;
+        public String            Description    { get; }
+        public GetMeterDelegate  GetMeter       { get; }
         //public readonly CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc;
 
-        public ACrypt(String Description
-                      //GetMeter:                      GetMeterFunc,
+        public ACrypt(String            Description,
+                      GetMeterDelegate  GetMeter
                       //CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc
             ) {
 
             this.Description                   = Description;
-            //this.GetMeter                      = GetMeter;
+            this.GetMeter                      = GetMeter;
             //this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
 
         }

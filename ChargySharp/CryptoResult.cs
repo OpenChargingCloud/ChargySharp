@@ -24,15 +24,23 @@ using System;
 namespace cloud.charging.apis.chargy
 {
 
-    public enum VerificationResult
+    public class CryptoResult : ICryptoResult
     {
-        Error,
-        UnknownCTRFormat,
-        EnergyMeterNotFound,
-        PublicKeyNotFound,
-        InvalidPublicKey,
-        InvalidSignature,
-        ValidSignature
+
+        public VerificationResult?  Status          { get; set; }
+
+        public String               ErrorMessage    { get; }
+
+
+        public CryptoResult(VerificationResult?  Status         = null,
+                            String               ErrorMessage   = null)
+        {
+
+            this.Status        = Status;
+            this.ErrorMessage  = ErrorMessage;
+
+        }
+
     }
 
 }

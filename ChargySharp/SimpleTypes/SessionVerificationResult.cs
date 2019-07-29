@@ -26,6 +26,7 @@ namespace cloud.charging.apis.chargy
 
     public enum SessionVerificationResult
     {
+        Error,
         UnknownSessionFormat,
         PublicKeyNotFound,
         InvalidPublicKey,

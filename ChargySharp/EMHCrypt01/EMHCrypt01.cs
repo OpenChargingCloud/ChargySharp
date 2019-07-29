@@ -18,23 +18,27 @@
 #region Usings
 
 using System;
-using System.Collections.Generic;
 using System.Linq;
+using System.Collections.Generic;
+using System.Security.Cryptography;
+using org.GraphDefined.Vanaheimr.Illias;
 
 #endregion
 
 namespace cloud.charging.apis.chargy
 {
 
+    public delegate IMeter GetMeterDelegate(Meter_Id EnergyMeterId);
+
     public class EMHCrypt01 : ACrypt
     {
 
-        public EMHCrypt01(
-                      //GetMeter:                      GetMeterFunc,
+        public EMHCrypt01(GetMeterDelegate GetMeter
                       //CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc
             )
 
-            : base("ECC secp192r1")
+            : base("ECC secp192r1",
+                   GetMeter)
 
         {
 
@@ -152,130 +156,135 @@ namespace cloud.charging.apis.chargy
 
         public override ICryptoResult VerifyMeasurement(IMeasurementValue MeasurementValue)
         {
-            return null;
+
+            if (MeasurementValue is IEMHMeasurementValue EMHMeasurementValue)
+                return VerifyMeasurement(EMHMeasurementValue);
+
+            return new CryptoResult(VerificationResult.UnknownCTRFormat);
+
         }
 
         public ICryptoResult VerifyMeasurement(IEMHMeasurementValue MeasurementValue)
         {
 
-            //function setResult(verificationResult: VerificationResult)
-            //{
-            //    cryptoResult.status     = verificationResult;
-            //    measurementValue.result = cryptoResult;
-            //    return cryptoResult;
-            //}
+            try
+            {
 
-            var cryptoBuffer  = new Byte[320];
-            cryptoBuffer.SetHex        (MeasurementValue.Measurement.EnergyMeterId,                                  0);
-            cryptoBuffer.SetTimestamp32(MeasurementValue.Timestamp,                                                 10);
-            cryptoBuffer.SetHex        (MeasurementValue.InfoStatus,                                                14, false);
-            cryptoBuffer.SetUInt32     (MeasurementValue.SecondsIndex,                                              15, true);
-            cryptoBuffer.SetHex        (MeasurementValue.PaginationId,                                              19, true);
-            cryptoBuffer.SetHex        (MeasurementValue.Measurement.OBIS,                                          23, false);
-            cryptoBuffer.SetInt8       (MeasurementValue.Measurement.UnitEncoded,                                   29);
-            cryptoBuffer.SetInt8       (MeasurementValue.Measurement.Scale,                                         30);
-            cryptoBuffer.SetUInt64     (MeasurementValue.Value,                                                     31, true);
-            cryptoBuffer.SetHex        (MeasurementValue.LogBookIndex,                                              39, false);
-            cryptoBuffer.SetText       (MeasurementValue.Measurement.ChargingSession.AuthorizationStart.Id,         41);
-            cryptoBuffer.SetTimestamp32(MeasurementValue.Measurement.ChargingSession.AuthorizationStart.Timestamp, 169);
+                //function setResult(verificationResult: VerificationResult)
+                //{
+                //    cryptoResult.status     = verificationResult;
+                //    measurementValue.result = cryptoResult;
+                //    return cryptoResult;
+                //}
 
-            //var cryptoResult = new EMHCrypt01Result(
-            //    Status:                       VerificationResult.InvalidSignature,
-            //    MeterId:                      SetHex        (cryptoBuffer, MeasurementValue.Measurement.EnergyMeterId,                                  0),
-            //    Timestamp:                    SetTimestamp32(cryptoBuffer, MeasurementValue.Timestamp,                                                 10),
-            //    InfoStatus:                   SetHex        (cryptoBuffer, MeasurementValue.InfoStatus,                                                14, false),
-            //    SecondsIndex:                 SetUInt32     (cryptoBuffer, MeasurementValue.SecondsIndex,                                              15, true),
-            //    PaginationId:                 SetHex        (cryptoBuffer, MeasurementValue.PaginationId,                                              19, true),
-            //    OBIS:                         SetHex        (cryptoBuffer, MeasurementValue.Measurement.OBIS,                                          23, false),
-            //    UnitEncoded:                  SetInt8       (cryptoBuffer, MeasurementValue.Measurement.UnitEncoded,                                   29),
-            //    Scale:                        SetInt8       (cryptoBuffer, MeasurementValue.Measurement.Scale,                                         30),
-            //    Value:                        SetUInt64     (cryptoBuffer, MeasurementValue.Value,                                                     31, true),
-            //    LogBookIndex:                 SetHex        (cryptoBuffer, MeasurementValue.LogBookIndex,                                              39, false),
-            //    AuthorizationStart:           SetText       (cryptoBuffer, MeasurementValue.Measurement.ChargingSession.AuthorizationStart.Id,         41),
-            //    AuthorizationStartTimestamp:  SetTimestamp32(cryptoBuffer, MeasurementValue.Measurement.ChargingSession.AuthorizationStart.Timestamp, 169)
-            //);
+                var cryptoBuffer  = new Byte[320];
 
-            //var signatureExpected = MeasurementValue.Signatures.First() as IECCSignature;
-            //if (signatureExpected != null)
-            //{
+                var cryptoResult = new EMHCrypt01Result(
 
-            //    try
-            //    {
+                    MeterId:                      cryptoBuffer.SetHex        (MeasurementValue.Measurement.MeterId,                                        0),
+                    Timestamp:                    cryptoBuffer.SetTimestamp32(MeasurementValue.Timestamp,                                                 10),
+                    InfoStatus:                   cryptoBuffer.SetHex        (MeasurementValue.InfoStatus,                                                14, false),
+                    SecondsIndex:                 cryptoBuffer.SetUInt32     (MeasurementValue.SecondsIndex,                                              15, true),
+                    PaginationId:                 cryptoBuffer.SetHex        (MeasurementValue.PaginationId,                                              19, true),
+                    OBIS:                         cryptoBuffer.SetHex        (MeasurementValue.Measurement.OBIS,                                          23, false),
+                    UnitEncoded:                  cryptoBuffer.SetInt8       (MeasurementValue.Measurement.UnitEncoded,                                   29),
+                    Scale:                        cryptoBuffer.SetInt8       (MeasurementValue.Measurement.Scale,                                         30),
+                    Value:                        cryptoBuffer.SetUInt64     (MeasurementValue.Value,                                                     31, true),
+                    LogBookIndex:                 cryptoBuffer.SetHex        (MeasurementValue.LogBookIndex,                                              39, false),
+                    AuthorizationStart:           cryptoBuffer.SetText       (MeasurementValue.Measurement.ChargingSession.AuthorizationStart.Id,         41),
+                    AuthorizationStartTimestamp:  cryptoBuffer.SetTimestamp32(MeasurementValue.Measurement.ChargingSession.AuthorizationStart.Timestamp, 169),
 
-            //        cryptoResult.signature = {
-            //            algorithm:  MeasurementValue.Measurement.SignatureInfos.Algorithm,
-            //            format:     MeasurementValue.Measurement.SignatureInfos.Format,
-            //            r:          signatureExpected.R,
-            //            s:          signatureExpected.S
-            //        };
-
-            //        // Only the first 24 bytes/192 bits are used!
-            //        cryptoResult.sha256value = this.crypt.createHash('sha256').
-            //                                              update(cryptoBuffer).
-            //                                              digest('hex').
-            //                                              substring(0, 48);
+                    Status:                       VerificationResult.InvalidSignature);
 
 
-            //        const meter = this.GetMeter(MeasurementValue.Measurement.EnergyMeterId);
-            //        if (meter != null)
-            //        {
+                if (MeasurementValue.Signatures.First() is IECCSignature signatureExpected)
+                {
 
-            //            cryptoResult.meter = meter;
+                    try
+                    {
 
-            //            var iPublicKey = meter.publicKeys[0] as IPublicKey;
-            //            if (iPublicKey != null)
-            //            {
+                        //cryptoResult.Signature = {
+                        //    algorithm:  MeasurementValue.Measurement.SignatureInfos.Algorithm,
+                        //    format:     MeasurementValue.Measurement.SignatureInfos.Format,
+                        //    r:          signatureExpected.R,
+                        //    s:          signatureExpected.S
+                        //};
 
-            //                try
-            //                {
+                        // Only the first 24 bytes/192 bits are used!
+                        using (var sha256 = SHA256.Create())
+                        {
+                            cryptoResult.SHA256Value = sha256.ComputeHash(cryptoBuffer).
+                                                              ToHexString().
+                                                              Substring(0, 48);
+                        }
 
-            //                    cryptoResult.publicKey            = iPublicKey.value.toLowerCase();
-            //                    cryptoResult.publicKeyFormat      = iPublicKey.format;
-            //                    cryptoResult.publicKeySignatures  = iPublicKey.signatures;
+                        var meter = GetMeter(MeasurementValue.Measurement.MeterId);
+                        if (meter != null)
+                        {
 
-            //                    try
-            //                    {
+                            cryptoResult.Meter = meter;
 
-            //                        if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
-            //                                       verify       (cryptoResult.sha256value,
-            //                                                     cryptoResult.signature))
-            //                        {
-            //                            return setResult(VerificationResult.ValidSignature);
-            //                        }
+                            if (meter.PublicKeys.First() is IPublicKey publicKey)
+                            {
 
-            //                        return setResult(VerificationResult.InvalidSignature);
+                                try
+                                {
 
-            //                    }
-            //                    catch (Exception e)
-            //                    {
-            //                        return setResult(VerificationResult.InvalidSignature);
-            //                    }
+                                //    cryptoResult.publicKey            = publicKey.value.toLowerCase();
+                                //    cryptoResult.publicKeyFormat      = publicKey.format;
+                                //    cryptoResult.publicKeySignatures  = publicKey.signatures;
 
-            //                }
-            //                catch (Exception e)
-            //                {
-            //                    return setResult(VerificationResult.InvalidPublicKey);
-            //                }
+                                    try
+                                    {
 
-            //            }
+                                        //if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
+                                        //               verify       (cryptoResult.sha256value,
+                                        //                             cryptoResult.signature))
+                                        //{
+                                        //    return setResult(VerificationResult.ValidSignature);
+                                        //}
 
-            //            else
-            //                return setResult(VerificationResult.PublicKeyNotFound);
+                                        //return setResult(VerificationResult.InvalidSignature);
 
-            //        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        return new EMHCrypt01Result(Status:        VerificationResult.InvalidSignature,
+                                                                    ErrorMessage:  e.Message);
+                                    }
 
-            //        else
-            //            return setResult(VerificationResult.EnergyMeterNotFound);
+                                }
+                                catch (Exception e)
+                                {
+                                    return new EMHCrypt01Result(Status:        VerificationResult.InvalidPublicKey,
+                                                                ErrorMessage:  e.Message);
+                                }
 
-            //    }
-            //    catch (Exception e)
-            //    {
-            //        return setResult(VerificationResult.InvalidSignature);
-            //    }
+                            }
+                            else
+                                return new EMHCrypt01Result(Status:  VerificationResult.PublicKeyNotFound);
 
-            //}
+                        }
+                        else
+                            return new EMHCrypt01Result(Status:  VerificationResult.EnergyMeterNotFound);
 
-            return new EMHCrypt01Result(VerificationResult.UnknownCTRFormat);
+                    }
+                    catch (Exception e)
+                    {
+                        return new EMHCrypt01Result(Status:        VerificationResult.InvalidSignature,
+                                                    ErrorMessage:  e.Message);
+                    }
+
+                }
+
+            }
+            catch (Exception e)
+            {
+                return new EMHCrypt01Result(Status:        VerificationResult.UnknownCTRFormat,
+                                            ErrorMessage:  e.Message);
+            }
+
+            return new EMHCrypt01Result(Status:  VerificationResult.UnknownCTRFormat);
 
         }
 

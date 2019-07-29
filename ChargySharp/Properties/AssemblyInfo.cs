@@ -6,7 +6,7 @@ using System.Runtime.InteropServices;
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
 [assembly: AssemblyTitle("ChargySharp")]
-[assembly: AssemblyDescription("A C# reference implementation of the Chargy transparency software.")]
+[assembly: AssemblyDescription("A C# reference implementation of the Chargy e-mobility transparency software.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("GraphDefined GmbH")]
 [assembly: AssemblyProduct("ChargySharp")]

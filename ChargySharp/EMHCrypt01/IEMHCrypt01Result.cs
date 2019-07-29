@@ -26,94 +26,103 @@ namespace cloud.charging.apis.chargy
 
     public interface IEMHCrypt01Result : ICryptoResult
     {
-        String         SHA256value                      { get; }
-        String         MeterId                          { get; }
-        IMeter         Meter                            { get; }
-        DateTime?      Timestamp                        { get; }
-        String         InfoStatus                       { get; }
-        String         SecondsIndex                     { get; }
-        String         PaginationId                     { get; }
-        OBIS?          OBIS                             { get; }
-        String         UnitEncoded                      { get; }
-        String         Scale                            { get; }
-        String         Value                            { get; }
-        String         LogBookIndex                     { get; }
-        String         AuthorizationStart               { get; }
-        String         AuthorizationStop                { get; }
-        String         AuthorizationStartTimestamp      { get; }
-        String         PublicKey                        { get; }
-        String         PublicKeyFormat                  { get; }
-        String         PublicKeySignatures              { get; }
-        IECCSignature  Signature                        { get; }
+
+        Meter_Id?  MeterId                          { get; }
+        IMeter           Meter                            { get; }
+        DateTime?        Timestamp                        { get; }
+        String           InfoStatus                       { get; }
+        UInt32?          SecondsIndex                     { get; }
+        String           PaginationId                     { get; }
+        OBIS?            OBIS                             { get; }
+        Int32?           UnitEncoded                      { get; }
+        Int32?           Scale                            { get; }
+        UInt64?          Value                            { get; }
+        String           LogBookIndex                     { get; }
+        String           AuthorizationStart               { get; }
+        String           AuthorizationStop                { get; }
+        DateTime?        AuthorizationStartTimestamp      { get; }
+        String           PublicKey                        { get; }
+        String           PublicKeyFormat                  { get; }
+        //String           PublicKeySignatures              { get; }
+
+        IECCSignature    Signature                        { get; }
+
+        String           SHA256Value                      { get; }
+
+
     }
 
     public class EMHCrypt01Result : IEMHCrypt01Result
     {
 
-        public String              SHA256value                    { get; }
+        public Meter_Id?      MeterId                        { get; }
 
-        public String              MeterId                        { get; }
+        public IMeter               Meter                          { get; set; }
 
-        public IMeter              Meter                          { get; }
+        public DateTime?            Timestamp                      { get; }
 
-        public DateTime?           Timestamp                      { get; }
+        public String               InfoStatus                     { get; }
 
-        public String              InfoStatus                     { get; }
+        public UInt32?              SecondsIndex                   { get; }
 
-        public String              SecondsIndex                   { get; }
+        public String               PaginationId                   { get; }
 
-        public String              PaginationId                   { get; }
+        public OBIS?                OBIS                           { get; }
 
-        public OBIS?               OBIS                           { get; }
+        public Int32?               UnitEncoded                    { get; }
 
-        public String              UnitEncoded                    { get; }
+        public Int32?               Scale                          { get; }
 
-        public String              Scale                          { get; }
+        public UInt64?              Value                          { get; }
 
-        public String              Value                          { get; }
+        public String               LogBookIndex                   { get; }
 
-        public String              LogBookIndex                   { get; }
+        public String               AuthorizationStart             { get; }
 
-        public String              AuthorizationStart             { get; }
+        public String               AuthorizationStop              { get; }
 
-        public String              AuthorizationStop              { get; }
+        public DateTime?            AuthorizationStartTimestamp    { get; }
 
-        public String              AuthorizationStartTimestamp    { get; }
+        public String               PublicKey                      { get; }
 
-        public String              PublicKey                      { get; }
+        public String               PublicKeyFormat                { get; }
 
-        public String              PublicKeyFormat                { get; }
+        public String               PublicKeySignatures            { get; }
 
-        public String              PublicKeySignatures            { get; }
+        public IECCSignature        Signature                      { get; }
 
-        public IECCSignature       Signature                      { get; }
 
-        public VerificationResult  Status                         { get; }
+        public String               SHA256Value                    { get; set; }
 
-        public EMHCrypt01Result(VerificationResult  Status,
-                                String              SHA256value                         = null,
-                                String              MeterId                             = null,
-                                IMeter              Meter                               = null,
-                                DateTime?           Timestamp                           = null,
-                                String              InfoStatus                          = null,
-                                String              SecondsIndex                        = null,
-                                String              PaginationId                        = null,
-                                OBIS?               OBIS                                = null,
-                                String              UnitEncoded                         = null,
-                                String              Scale                               = null,
-                                String              Value                               = null,
-                                String              LogBookIndex                        = null,
-                                String              AuthorizationStart                  = null,
-                                String              AuthorizationStop                   = null,
-                                String              AuthorizationStartTimestamp         = null,
-                                String              PublicKey                           = null,
-                                String              PublicKeyFormat                     = null,
-                                String              PublicKeySignatures                 = null,
-                                IECCSignature       Signature                           = null)
+        public VerificationResult?  Status                         { get; set; }
+
+        public String               ErrorMessage                   { get; }
+
+
+        public EMHCrypt01Result(Meter_Id?      MeterId                             = null,
+                                IMeter               Meter                               = null,
+                                DateTime?            Timestamp                           = null,
+                                String               InfoStatus                          = null,
+                                UInt32?              SecondsIndex                        = null,
+                                String               PaginationId                        = null,
+                                OBIS?                OBIS                                = null,
+                                Int32?               UnitEncoded                         = null,
+                                Int32?               Scale                               = null,
+                                UInt64?              Value                               = null,
+                                String               LogBookIndex                        = null,
+                                String               AuthorizationStart                  = null,
+                                String               AuthorizationStop                   = null,
+                                DateTime?            AuthorizationStartTimestamp         = null,
+                                String               PublicKey                           = null,
+                                String               PublicKeyFormat                     = null,
+                                String               PublicKeySignatures                 = null,
+                                IECCSignature        Signature                           = null,
+
+                                String               SHA256value                         = null,
+                                VerificationResult?  Status                              = null,
+                                String               ErrorMessage                        = null)
         {
 
-            this.Status                        = Status;
-            this.SHA256value                   = SHA256value;
             this.MeterId                       = MeterId;
             this.Meter                         = Meter;
             this.Timestamp                     = Timestamp;
@@ -132,6 +141,10 @@ namespace cloud.charging.apis.chargy
             this.PublicKeyFormat               = PublicKeyFormat;
             this.PublicKeySignatures           = PublicKeySignatures;
             this.Signature                     = Signature;
+
+            this.SHA256Value                   = SHA256value;
+            this.Status                        = Status;
+            this.ErrorMessage                  = ErrorMessage;
 
         }
 

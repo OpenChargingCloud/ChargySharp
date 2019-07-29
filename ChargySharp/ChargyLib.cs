@@ -38,8 +38,42 @@ namespace cloud.charging.apis.chargy
 
         #endregion
 
+        public static Byte[] SetHex(this Byte[] CryptoBuffer, Byte[] Hex, UInt32 offset, Boolean reverse = false)
+        {
 
-        public static void SetHex(this Byte[] CryptoBuffer, String HexValue, UInt32 offset, Boolean reverse = false)
+            if (Hex == null || Hex.Length == 0)
+                return Hex;
+
+            Array.Copy(Hex, 0, CryptoBuffer, offset, Hex.Length);
+
+            return Hex;
+
+        }
+
+        public static OBIS SetHex(this Byte[] CryptoBuffer, OBIS Obis, UInt32 offset, Boolean reverse = false)
+        {
+            var Bytes = Obis.Bytes;
+            Array.Copy(Bytes, 0, CryptoBuffer, offset, Bytes.Length);
+            return Obis;
+        }
+
+        public static Meter_Id SetHex(this Byte[] CryptoBuffer, Meter_Id EnergyMeterId, UInt32 offset, Boolean reverse = false)
+        {
+
+            var HexValue = EnergyMeterId.ToString();
+
+            var bytes = Enumerable.Range(0, HexValue.Length).
+                                   Where (x => x % 2 == 0).
+                                   Select(x => Convert.ToByte(HexValue.Substring(x, 2), 16)).
+                                   ToArray();
+
+            Array.Copy(bytes, 0, CryptoBuffer, offset, bytes.Length);
+
+            return EnergyMeterId;
+
+        }
+
+        public static String SetHex(this Byte[] CryptoBuffer, String HexValue, UInt32 offset, Boolean reverse = false)
         {
 
             Byte[] bytes = null;
@@ -48,7 +82,7 @@ namespace cloud.charging.apis.chargy
                 HexValue = HexValue.Trim();
 
             if (String.IsNullOrEmpty(HexValue))
-                return;
+                return HexValue;
 
             if (HexValue.Length % 2 == 1)
                 throw new ArgumentException("Wrong size of the input string!", nameof(HexValue));
@@ -60,9 +94,11 @@ namespace cloud.charging.apis.chargy
 
             Array.Copy(bytes, 0, CryptoBuffer, offset, bytes.Length);
 
+            return HexValue;
+
         }
 
-        public static void SetTimestamp(this Byte[] CryptoBuffer, DateTime timestamp, UInt32 offset)
+        public static DateTime SetTimestamp(this Byte[] CryptoBuffer, DateTime timestamp, UInt32 offset)
         {
 
             var unixtime  = (Int64) Math.Floor(timestamp.Subtract(UnixEpoch).TotalSeconds);
@@ -70,9 +106,11 @@ namespace cloud.charging.apis.chargy
 
             Array.Copy(bytes, 0, CryptoBuffer, offset, bytes.Length);
 
+            return timestamp;
+
         }
 
-        public static void SetTimestamp32(this Byte[] CryptoBuffer, DateTime timestamp, UInt32 offset)
+        public static DateTime SetTimestamp32(this Byte[] CryptoBuffer, DateTime timestamp, UInt32 offset)
         {
 
             // Usage of utcOffset() is afaik EMH specific!
@@ -92,20 +130,24 @@ namespace cloud.charging.apis.chargy
             //    tv.setUint8(bytes.length - i - 1,            bytes[i]);
             //}
 
+            return timestamp;
+
         }
 
-        public static void SetInt8(this Byte[] CryptoBuffer, Byte value, UInt32 offset)
+        public static Byte SetInt8(this Byte[] CryptoBuffer, Byte value, UInt32 offset)
         {
             CryptoBuffer[offset] = value;
+            return value;
         }
 
-        public static void SetInt8(this Byte[] CryptoBuffer, Int32 value, UInt32 offset)
+        public static Int32 SetInt8(this Byte[] CryptoBuffer, Int32 value, UInt32 offset)
         {
             var bytes = BitConverter.GetBytes(value);
             Array.Copy(bytes, 0, CryptoBuffer, offset, 1);
+            return value;
         }
 
-        public static void SetUInt32(this Byte[] CryptoBuffer, UInt32 value, UInt32 offset, Boolean reverse = false)
+        public static UInt32 SetUInt32(this Byte[] CryptoBuffer, UInt32 value, UInt32 offset, Boolean reverse = false)
         {
 
             var bytes = BitConverter.GetBytes(value);
@@ -115,9 +157,11 @@ namespace cloud.charging.apis.chargy
 
             Array.Copy(bytes, 0, CryptoBuffer, offset, bytes.Length);
 
+            return value;
+
         }
 
-        public static void SetUInt64(this Byte[] CryptoBuffer, UInt64 value, UInt32 offset, Boolean reverse = false)
+        public static UInt64 SetUInt64(this Byte[] CryptoBuffer, UInt64 value, UInt32 offset, Boolean reverse = false)
         {
 
             var bytes = BitConverter.GetBytes(value);
@@ -127,12 +171,16 @@ namespace cloud.charging.apis.chargy
 
             Array.Copy(bytes, 0, CryptoBuffer, offset, bytes.Length);
 
+
+            return value;
+
         }
 
-        public static void SetText(this Byte[] CryptoBuffer, String text, UInt32 offset)
+        public static String SetText(this Byte[] CryptoBuffer, String text, UInt32 offset)
         {
             var bytes = Encoding.UTF8.GetBytes(text);
             Array.Copy(bytes, 0, CryptoBuffer, offset, bytes.Length);
+            return text;
         }
 
     }

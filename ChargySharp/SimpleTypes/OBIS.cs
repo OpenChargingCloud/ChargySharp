@@ -18,7 +18,7 @@
 #region Usings
 
 using System;
-
+using System.Text.RegularExpressions;
 using org.GraphDefined.Vanaheimr.Illias;
 
 #endregion
@@ -35,6 +35,25 @@ namespace cloud.charging.apis.chargy
 
     {
 
+        #region Data
+
+        /// <summary>
+        /// The regular expression for parsing an OBIS identification.
+        /// https://wiki.volkszaehler.org/software/obis
+        /// https://github.com/volkszaehler/vzlogger/blob/master/src/Obis.cpp
+        /// https://www.promotic.eu/en/pmdoc/Subsystems/Comm/PmDrivers/IEC62056_OBIS.htm
+        /// https://www.bundesnetzagentur.de/DE/Service-Funktionen/Beschlusskammern/BK06/BK6_81_GPKE_GeLi/Mitteilung_nr_62/Anlagen/Codeliste_OBIS_Kennzahlen_2.2g.pdf?__blob=publicationFile&v=2
+        /// http://www.nzr.de/download.php?id=612: 1.17.0 => Signierter Zählerstand (nur im EDL40-Modus)
+        ///
+        /// format: "A-B:C.D.E[*&]F"
+        /// A, B, E, F are optional
+        /// C & D are mandatory
+        /// </summary>
+        public static readonly Regex OBIS_RegEx = new Regex(@"^([0-9A-Fa-f]{3}-)*([0-9A-Fa-f]{3}:)*[0-9A-Fa-f]{3}\.[0-9A-Fa-f]{3}(\.[0-9A-Fa-f]{3})*(\*[0-9A-Fa-f]{3})*$",
+                                                            RegexOptions.IgnorePatternWhitespace);
+
+        #endregion
+
         #region Properties
 
         public Byte Media       { get; } // A
@@ -44,7 +63,16 @@ namespace cloud.charging.apis.chargy
         public Byte Quantities  { get; } // E =>  0: Total
         public Byte Storage     { get; } // F
 
-        public String Text { get; }
+        public Byte[] Bytes
+
+            => new Byte[] {
+                   Media,
+                   Channel,
+                   Indicator,
+                   Mode,
+                   Quantities,
+                   Storage
+               };
 
         #endregion
 
@@ -68,19 +96,12 @@ namespace cloud.charging.apis.chargy
             this.Quantities  = Quantities;
             this.Storage     = Storage;
 
-            this.Text        = String.Concat(Media,      "-",
-                                             Channel,    ":",
-                                             Indicator,  ".",
-                                             Mode,       ".",
-                                             Quantities, "*",
-                                             Storage);
-
         }
 
         #endregion
 
 
-        #region ParseHex   (Text)
+        #region (static) ParseHex   (Text)
 
         /// <summary>
         /// Parse the given string as a hexadecimal OBIS identification.
@@ -111,7 +132,7 @@ namespace cloud.charging.apis.chargy
 
         #endregion
 
-        #region TryParseHex(Text)
+        #region (static) TryParseHex(Text)
 
         /// <summary>
         /// Try to parse the given string as a hexadecimal OBIS identification.
@@ -129,7 +150,7 @@ namespace cloud.charging.apis.chargy
 
         #endregion
 
-        #region TryParseHex(Text, out OBIS)
+        #region (static) TryParseHex(Text, out OBIS)
 
         /// <summary>
         /// Try to parse the given string as a hexadecimal OBIS identification.
@@ -165,12 +186,12 @@ namespace cloud.charging.apis.chargy
                 // A, B, E, F are optional
                 // C & D are mandatory
                 OBIS = new OBIS(
-                    media:      Convert.ToByte(Text.Substring( 0,  2), 16), // A
-                    channel:    Convert.ToByte(Text.Substring( 2,  4), 16), // B
-                    indicator:  Convert.ToByte(Text.Substring( 4,  6), 16), // C =>  1: Wirkenergie Bezug P+, kWh
-                    mode:       Convert.ToByte(Text.Substring( 6,  8), 16), // D => 17: Signierter Momentanwert (vgl. 7)
-                    quantities: Convert.ToByte(Text.Substring( 8, 10), 16), // E =>  0: Total
-                    storage:    Convert.ToByte(Text.Substring(10, 12), 16)  // F
+                    Media:      Convert.ToByte(Text.Substring( 0,  2), 16), // A
+                    Channel:    Convert.ToByte(Text.Substring( 2,  4), 16), // B
+                    Indicator:  Convert.ToByte(Text.Substring( 4,  6), 16), // C =>  1: Wirkenergie Bezug P+, kWh
+                    Mode:       Convert.ToByte(Text.Substring( 6,  8), 16), // D => 17: Signierter Momentanwert (vgl. 7)
+                    Quantities: Convert.ToByte(Text.Substring( 8, 10), 16), // E =>  0: Total
+                    Storage:    Convert.ToByte(Text.Substring(10, 12), 16)  // F
                 );
 
                 return true;
@@ -347,7 +368,27 @@ namespace cloud.charging.apis.chargy
             if ((Object) OBIS == null)
                 throw new ArgumentNullException(nameof(OBIS),  "The given OBIS identification must not be null!");
 
-            return String.Compare(Text, OBIS.Text, StringComparison.OrdinalIgnoreCase);
+            var c = Media.CompareTo(OBIS.Media);
+            if (c != 0)
+                return c;
+
+            c = Channel.CompareTo(OBIS.Channel);
+            if (c != 0)
+                return c;
+
+            c = Indicator.CompareTo(OBIS.Indicator);
+            if (c != 0)
+                return c;
+
+            c = Mode.CompareTo(OBIS.Mode);
+            if (c != 0)
+                return c;
+
+            c = Quantities.CompareTo(OBIS.Quantities);
+            if (c != 0)
+                return c;
+
+            return Storage.CompareTo(OBIS.Storage);
 
         }
 
@@ -412,7 +453,13 @@ namespace cloud.charging.apis.chargy
         /// </summary>
         /// <returns>The HashCode of this object.</returns>
         public override Int32 GetHashCode()
-            => Text.GetHashCode();
+
+            => Media.     GetHashCode() * 13 ^
+               Channel.   GetHashCode() * 11 ^
+               Indicator. GetHashCode() *  7 ^
+               Mode.      GetHashCode() *  5 ^
+               Quantities.GetHashCode() *  3 ^
+               Storage.   GetHashCode();
 
         #endregion
 
@@ -422,7 +469,13 @@ namespace cloud.charging.apis.chargy
         /// Return a text representation of this object.
         /// </summary>
         public override String ToString()
-            => Text;
+
+            => String.Concat(Media,      "-",
+                             Channel,    ":",
+                             Indicator,  ".",
+                             Mode,       ".",
+                             Quantities, "*",
+                             Storage);
 
         #endregion
 
