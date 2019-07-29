@@ -21,6 +21,7 @@ using System;
 using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+
 using org.GraphDefined.Vanaheimr.Illias;
 
 #endregion
@@ -28,21 +29,21 @@ using org.GraphDefined.Vanaheimr.Illias;
 namespace cloud.charging.apis.chargy
 {
 
-    public delegate IMeter GetMeterDelegate(Meter_Id EnergyMeterId);
-
     public class EMHCrypt01 : ACrypt
     {
 
-        public EMHCrypt01(GetMeterDelegate GetMeter
-                      //CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc
-            )
+        #region Constructor(s)
+
+        public EMHCrypt01(GetMeterDelegate                      GetMeter,
+                          CheckMeterPublicKeySignatureDelegate  CheckMeterPublicKeySignature)
 
             : base("ECC secp192r1",
-                   GetMeter)
+                   GetMeter,
+                   CheckMeterPublicKeySignature)
 
-        {
+        { }
 
-        }
+        #endregion
 
 
         public override ICryptoResult SignMeasurement(IMeasurementValue  measurementValue,
@@ -289,6 +290,7 @@ namespace cloud.charging.apis.chargy
         }
 
         #endregion
+
 
     }
 

@@ -26,20 +26,31 @@ namespace cloud.charging.apis.chargy
 
     public abstract class ACrypt {
 
-        public String            Description    { get; }
-        public GetMeterDelegate  GetMeter       { get; }
-        //public readonly CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc;
+        #region Properties
 
-        public ACrypt(String            Description,
-                      GetMeterDelegate  GetMeter
-                      //CheckMeterPublicKeySignature:  CheckMeterPublicKeySignatureFunc
-            ) {
+        public String                                Description                     { get; }
+
+        public GetMeterDelegate                      GetMeter                        { get; }
+
+        public CheckMeterPublicKeySignatureDelegate  CheckMeterPublicKeySignature    { get; }
+
+        #endregion
+
+        #region Constructor(s)
+
+        public ACrypt(String                                Description,
+                      GetMeterDelegate                      GetMeter,
+                      CheckMeterPublicKeySignatureDelegate  CheckMeterPublicKeySignature)
+        {
 
             this.Description                   = Description;
             this.GetMeter                      = GetMeter;
-            //this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
+            this.CheckMeterPublicKeySignature  = CheckMeterPublicKeySignature;
 
         }
+
+        #endregion
+
 
         public abstract ISessionCryptoResult VerifyChargingSession(IChargingSession ChargingSession);
 

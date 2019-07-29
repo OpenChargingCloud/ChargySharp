@@ -43,6 +43,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Delegates.cs" />
     <Compile Include="ChargyLib.cs" />
     <Compile Include="EMHCrypt01\EMHSessionCryptoResult.cs" />
     <Compile Include="CryptoResult.cs" />
