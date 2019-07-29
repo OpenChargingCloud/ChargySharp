@@ -30,7 +30,7 @@ namespace cloud.charging.apis.chargy
 
         IMeasurement             Measurement     { get; set; }
         ACrypt                   Method          { get; }
-        IVerificationResult            Result          { get; }
+        IVerificationResult      Result          { get; set; }
 
         DateTime                 Timestamp       { get; }
         UInt64                   Value           { get; }

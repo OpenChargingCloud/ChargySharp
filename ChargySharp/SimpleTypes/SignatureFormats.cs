@@ -27,7 +27,8 @@ namespace cloud.charging.apis.chargy
     public enum SignatureFormats
     {
         DER,
-        rs
+        rs,
+        plain
     }
 
 }

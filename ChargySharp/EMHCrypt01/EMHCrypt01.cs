@@ -358,16 +358,9 @@ namespace cloud.charging.apis.chargy
             try
             {
 
-                //function setResult(verificationResult: VerificationResult)
-                //{
-                //    cryptoResult.status     = verificationResult;
-                //    measurementValue.result = cryptoResult;
-                //    return cryptoResult;
-                //}
-
                 var cryptoBuffer  = new Byte[320];
 
-                var cryptoResult = new EMHVerificationResult(
+                var verificationResult  = new EMHVerificationResult(
 
                     MeterId:                      cryptoBuffer.SetHex        (MeasurementValue.Measurement.MeterId,                                        0),
                     Timestamp:                    cryptoBuffer.SetTimestamp32(MeasurementValue.Timestamp,                                                 10),
@@ -385,7 +378,8 @@ namespace cloud.charging.apis.chargy
                     Status:                       VerificationResult.InvalidSignature);
 
 
-                if (MeasurementValue.Signatures.First() is IECCSignature signatureExpected)
+                var signatureExpected = MeasurementValue.Signatures.FirstOrDefault();
+                if (signatureExpected != null && (signatureExpected.Value?.Trim().IsNotNullOrEmpty() == true))
                 {
 
                     try
@@ -406,8 +400,8 @@ namespace cloud.charging.apis.chargy
 
                             SHA256Hash = SHA256.ComputeHash(cryptoBuffer);
 
-                            cryptoResult.SHA256Value = SHA256Hash.ToHexString().
-                                                                  Substring(0, 48);
+                            verificationResult.SHA256Value = SHA256Hash.ToHexString().
+                                                                        Substring(0, 48);
 
                         }
 
@@ -415,9 +409,10 @@ namespace cloud.charging.apis.chargy
                         if (meter != null)
                         {
 
-                            cryptoResult.Meter = meter;
+                            verificationResult.SetMeter(meter);
 
-                            if (meter.PublicKeys.First() is IPublicKey publicKey)
+                            var publicKey = meter.PublicKeys.FirstOrDefault();
+                            if (publicKey != null && (publicKey.Value?.Trim().IsNotNullOrEmpty() == true))
                             {
 
                                 try
@@ -437,20 +432,19 @@ namespace cloud.charging.apis.chargy
                                         verifier.Init(false, EMHPublicKey);
                                         verifier.BlockUpdate(SHA256Hash, 0, 24);
 
-                                        var MeterValueSignatureFormat  = MeterValueSignatureFormats.plain;
-                                        var SignatureBytes             = cryptoResult.Signature.Value.HexStringToByteArray();
-                                        var verified                   = false;
+                                        var SignatureBytes  = signatureExpected.Value.HexStringToByteArray();
+                                        var verified        = false;
 
-                                        switch (MeterValueSignatureFormat)
+                                        switch (signatureExpected.Format)
                                         // DER:   3037021900 ab9f84adda460f8410bb26061016d6c8258689caa73b0b fd021a00 fd1eab0aa198b5803358a2a91624dc012d0ef3ee72b3de820a
                                         // plain:            ab9f84adda460f8410bb26061016d6c8258689caa73b0b          fd1eab0aa198b5803358a2a91624dc012d0ef3ee72b3de820a
                                         {
 
-                                            case MeterValueSignatureFormats.DER:
+                                            case SignatureFormats.DER:
                                                 verified = verifier.VerifySignature(SignatureBytes);
                                                 break;
 
-                                            case MeterValueSignatureFormats.plain:
+                                            case SignatureFormats.plain: // Shouldn't this be called rs?
                                                 verified = verifier.VerifySignature(new DerSequence(
                                                                                         new DerInteger(new BigInteger(SignatureBytes.ToHexString(0, 24), 16)),
                                                                                         new DerInteger(new BigInteger(SignatureBytes.ToHexString(   23), 16))
@@ -462,51 +456,53 @@ namespace cloud.charging.apis.chargy
 
                                         // Success!
                                         if (verified)
-                                            return cryptoResult.SetStatus(VerificationResult.ValidSignature);
+                                            verificationResult.SetStatus(VerificationResult.ValidSignature);
 
-
-                                        return cryptoResult.SetStatus(VerificationResult.InvalidSignature);
-
+                                        else
+                                            verificationResult.SetStatus(VerificationResult.InvalidSignature);
 
                                     }
                                     catch (Exception e)
                                     {
-                                        return cryptoResult.SetError(VerificationResult.InvalidSignature,
-                                                                     e.Message);
+                                        verificationResult.SetError(VerificationResult.InvalidSignature,
+                                                              e.Message);
                                     }
 
                                 }
                                 catch (Exception e)
                                 {
-                                    return cryptoResult.SetError(VerificationResult.InvalidPublicKey,
-                                                                 e.Message);
+                                    verificationResult.SetError(VerificationResult.InvalidPublicKey,
+                                                                e.Message);
                                 }
 
                             }
                             else
-                                return cryptoResult.SetStatus(VerificationResult.PublicKeyNotFound);
+                                verificationResult.SetStatus(VerificationResult.PublicKeyNotFound);
 
                         }
                         else
-                            return cryptoResult.SetStatus(VerificationResult.MeterNotFound);
+                            verificationResult.SetStatus(VerificationResult.MeterNotFound);
 
                     }
                     catch (Exception e)
                     {
-                        return cryptoResult.SetError(VerificationResult.InvalidSignature,
-                                                     e.Message);
+                        verificationResult.SetError(VerificationResult.InvalidSignature,
+                                                    e.Message);
                     }
 
                 }
 
+                else
+                    verificationResult.SetStatus(VerificationResult.InvalidSignature);
+
+                return MeasurementValue.Result = verificationResult;
+
             }
             catch (Exception e)
             {
-                return new EMHVerificationResult(Status:        VerificationResult.UnknownCTRFormat,
-                                            ErrorMessage:  e.Message);
+                return MeasurementValue.Result = new EMHVerificationResult(Status:        VerificationResult.UnknownCTRFormat,
+                                                                           ErrorMessage:  e.Message);
             }
-
-            return new EMHVerificationResult(Status:  VerificationResult.UnknownCTRFormat);
 
         }
 
