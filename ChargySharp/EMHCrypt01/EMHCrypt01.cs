@@ -22,7 +22,15 @@ using System.Linq;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
+using Org.BouncyCastle.Math;
+using Org.BouncyCastle.Asn1.X9;
+using Org.BouncyCastle.Math.EC;
+using Org.BouncyCastle.Security;
+using Org.BouncyCastle.Asn1.Sec;
+using Org.BouncyCastle.Crypto.Parameters;
+
 using org.GraphDefined.Vanaheimr.Illias;
+using Org.BouncyCastle.Asn1;
 
 #endregion
 
@@ -31,6 +39,15 @@ namespace cloud.charging.apis.chargy
 
     public class EMHCrypt01 : ACrypt
     {
+
+        #region Data
+
+        public String              CurveName    { get; }
+        public X9ECParameters      ECP          { get; }
+        public ECDomainParameters  ECSpec       { get; }
+        public FpCurve             C            { get; }
+
+        #endregion
 
         #region Constructor(s)
 
@@ -41,9 +58,135 @@ namespace cloud.charging.apis.chargy
                    GetMeter,
                    CheckMeterPublicKeySignature)
 
-        { }
+        {
+
+            this.CurveName  = "P-192";
+            this.ECP        = ECNamedCurveTable.GetByName(CurveName);
+            this.ECSpec     = new ECDomainParameters(ECP.Curve, ECP.G, ECP.N, ECP.H, ECP.GetSeed());
+            this.C          = (FpCurve) ECSpec.Curve;
+
+        }
 
         #endregion
+
+
+        #region GenerateKeyPairs()
+
+        public ECKeyPair GenerateKeyPairs()
+        {
+
+            var generator = GeneratorUtilities.GetKeyPairGenerator("ECDH");
+            generator.Init(new ECKeyGenerationParameters(ECSpec, new SecureRandom()));
+
+            var keyPair = generator.GenerateKeyPair();
+
+            return new ECKeyPair(keyPair.Private as ECPrivateKeyParameters,
+                                 keyPair.Public  as ECPublicKeyParameters);
+
+        }
+
+        #endregion
+
+        #region ParsePrivateKey(PrivateKey)
+
+        public ECPrivateKeyParameters ParsePrivateKey(Byte[] PrivateKey)
+
+            => new ECPrivateKeyParameters(new BigInteger(1, PrivateKey), ECSpec);
+
+
+        public ECPrivateKeyParameters ParsePrivateKey(String PrivateKey)
+
+            => new ECPrivateKeyParameters(new BigInteger(PrivateKey, 16), ECSpec);
+
+        #endregion
+
+        #region ParsePublicKey (PublicKey, PublicKeyFormat = PublicKeyFormats.DER)
+
+        public ECPublicKeyParameters ParsePublicKey(Byte[]            PublicKey,
+                                                    PublicKeyFormats  PublicKeyFormat = PublicKeyFormats.DER)
+        {
+
+            switch (PublicKeyFormat)
+            {
+
+                case PublicKeyFormats.DER:
+                    return new ECPublicKeyParameters("ECDSA", ECP.Curve.DecodePoint(PublicKey), ECSpec);
+
+                case PublicKeyFormats.plain:
+                    var c           = (FpCurve) ECSpec.Curve;
+                    //var x           = c.FromBigInteger(new BigInteger(PublicKey.SubSequence(0, 24)));
+                    //var y           = c.FromBigInteger(new BigInteger(PublicKey.SubSequence(   24)));
+                    var _PublicKey  = PublicKey.ToHexString();
+                    var x           = c.FromBigInteger(new BigInteger(_PublicKey.Substring(0, 48), 16));
+                    var y           = c.FromBigInteger(new BigInteger(_PublicKey.Substring(   48), 16));
+                    var q           = new FpPoint(ECP.Curve, x, y);
+                    var isv         = q.IsValid();
+                    return new ECPublicKeyParameters("ECDH", q, SecObjectIdentifiers.SecP192r1);
+
+            }
+
+            return null;
+
+        }
+
+        public ECPublicKeyParameters ParsePublicKey(String            PublicKey,
+                                                    PublicKeyFormats  PublicKeyFormat = PublicKeyFormats.DER)
+        {
+
+            switch (PublicKeyFormat)
+            {
+
+                case PublicKeyFormats.DER:
+                    return new ECPublicKeyParameters("ECDSA", ECP.Curve.DecodePoint(PublicKey.HexStringToByteArray()), ECSpec);
+
+                case PublicKeyFormats.plain:
+                    var c           = (FpCurve) ECSpec.Curve;
+                    var x           = c.FromBigInteger(new BigInteger(PublicKey.Substring(0, 48), 16));
+                    var y           = c.FromBigInteger(new BigInteger(PublicKey.Substring(   48), 16));
+                    var q           = new FpPoint(ECP.Curve, x, y);
+                    var isv         = q.IsValid();
+                    return new ECPublicKeyParameters("ECDH", q, SecObjectIdentifiers.SecP192r1);
+
+            }
+
+            return null;
+
+        }
+
+        #endregion
+
+        #region ParsePublicKey (X, Y)
+
+        public ECPublicKeyParameters ParsePublicKey(Byte[] X, Byte[] Y)
+        {
+
+            var c = (FpCurve) ECSpec.Curve;
+            var q = new FpPoint(ECP.Curve,
+                                c.FromBigInteger(new BigInteger(X)),
+                                c.FromBigInteger(new BigInteger(Y)));
+
+            return q.IsValid()
+                       ? new ECPublicKeyParameters("ECDH", q, SecObjectIdentifiers.SecP192r1)
+                       : null;
+
+        }
+
+        public ECPublicKeyParameters ParsePublicKey(String X, String Y)
+        {
+
+            var c = (FpCurve) ECSpec.Curve;
+            var q = new FpPoint(ECP.Curve,
+                                c.FromBigInteger(new BigInteger(X, 16)),
+                                c.FromBigInteger(new BigInteger(Y, 16)));
+
+            return q.IsValid()
+                       ? new ECPublicKeyParameters("ECDH", q, SecObjectIdentifiers.SecP192r1)
+                       : null;
+
+        }
+
+        #endregion
+
 
 
         public override ICryptoResult SignMeasurement(IMeasurementValue  measurementValue,
@@ -211,12 +354,17 @@ namespace cloud.charging.apis.chargy
                         //    s:          signatureExpected.S
                         //};
 
+                        var SHA256Hash = new Byte[0];
+
                         // Only the first 24 bytes/192 bits are used!
-                        using (var sha256 = SHA256.Create())
+                        using (var SHA256 = new SHA256Managed())
                         {
-                            cryptoResult.SHA256Value = sha256.ComputeHash(cryptoBuffer).
-                                                              ToHexString().
-                                                              Substring(0, 48);
+
+                            SHA256Hash = SHA256.ComputeHash(cryptoBuffer);
+
+                            cryptoResult.SHA256Value = SHA256Hash.ToHexString().
+                                                                  Substring(0, 48);
+
                         }
 
                         var meter = GetMeter(MeasurementValue.Measurement.MeterId);
@@ -231,6 +379,8 @@ namespace cloud.charging.apis.chargy
                                 try
                                 {
 
+                                    var EMHPublicKey = ParsePublicKey(publicKey.Value);
+
                                 //    cryptoResult.publicKey            = publicKey.value.toLowerCase();
                                 //    cryptoResult.publicKeyFormat      = publicKey.format;
                                 //    cryptoResult.publicKeySignatures  = publicKey.signatures;
@@ -238,42 +388,69 @@ namespace cloud.charging.apis.chargy
                                     try
                                     {
 
-                                        //if (this.curve.keyFromPublic(cryptoResult.publicKey, 'hex').
-                                        //               verify       (cryptoResult.sha256value,
-                                        //                             cryptoResult.signature))
-                                        //{
-                                        //    return setResult(VerificationResult.ValidSignature);
-                                        //}
+                                        //var bVerifier   = SignerUtilities.GetSigner("SHA-256withECDSA");
+                                        var verifier      = SignerUtilities.GetSigner("NONEwithECDSA");
+                                        verifier.Init(false, EMHPublicKey);
+                                        verifier.BlockUpdate(SHA256Hash, 0, 24);
 
-                                        //return setResult(VerificationResult.InvalidSignature);
+                                        var MeterValueSignatureFormat  = MeterValueSignatureFormats.plain;
+                                        var SignatureBytes             = cryptoResult.Signature.Value.HexStringToByteArray();
+                                        var verified                   = false;
+
+                                        switch (MeterValueSignatureFormat)
+                                        // DER:   3037021900 ab9f84adda460f8410bb26061016d6c8258689caa73b0b fd021a00 fd1eab0aa198b5803358a2a91624dc012d0ef3ee72b3de820a
+                                        // plain:            ab9f84adda460f8410bb26061016d6c8258689caa73b0b          fd1eab0aa198b5803358a2a91624dc012d0ef3ee72b3de820a
+                                        {
+
+                                            case MeterValueSignatureFormats.DER:
+                                                verified = verifier.VerifySignature(SignatureBytes);
+                                                break;
+
+                                            case MeterValueSignatureFormats.plain:
+                                                verified = verifier.VerifySignature(new DerSequence(
+                                                                                        new DerInteger(new BigInteger(SignatureBytes.ToHexString(0, 24), 16)),
+                                                                                        new DerInteger(new BigInteger(SignatureBytes.ToHexString(   23), 16))
+                                                                                    ).GetDerEncoded());
+                                                break;
+
+                                        }
+
+
+                                        // Success!
+                                        if (verified)
+                                            return cryptoResult.SetStatus(VerificationResult.ValidSignature);
+
+
+                                        return cryptoResult.SetStatus(VerificationResult.InvalidSignature);
+
 
                                     }
                                     catch (Exception e)
                                     {
-                                        return new EMHCrypt01Result(Status:        VerificationResult.InvalidSignature,
-                                                                    ErrorMessage:  e.Message);
+                                        return cryptoResult.SetError(VerificationResult.InvalidSignature,
+                                                                     e.Message);
                                     }
 
                                 }
                                 catch (Exception e)
                                 {
-                                    return new EMHCrypt01Result(Status:        VerificationResult.InvalidPublicKey,
-                                                                ErrorMessage:  e.Message);
+                                    return cryptoResult.SetError(VerificationResult.InvalidPublicKey,
+                                                                 e.Message);
                                 }
 
                             }
                             else
-                                return new EMHCrypt01Result(Status:  VerificationResult.PublicKeyNotFound);
+                                return cryptoResult.SetStatus(VerificationResult.PublicKeyNotFound);
 
                         }
                         else
-                            return new EMHCrypt01Result(Status:  VerificationResult.EnergyMeterNotFound);
+                            return cryptoResult.SetStatus(VerificationResult.MeterNotFound);
 
                     }
                     catch (Exception e)
                     {
-                        return new EMHCrypt01Result(Status:        VerificationResult.InvalidSignature,
-                                                    ErrorMessage:  e.Message);
+                        return cryptoResult.SetError(VerificationResult.InvalidSignature,
+                                                     e.Message);
                     }
 
                 }

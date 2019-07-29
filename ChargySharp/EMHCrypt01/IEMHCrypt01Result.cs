@@ -55,7 +55,7 @@ namespace cloud.charging.apis.chargy
     public class EMHCrypt01Result : IEMHCrypt01Result
     {
 
-        public Meter_Id?      MeterId                        { get; }
+        public Meter_Id?            MeterId                        { get; }
 
         public IMeter               Meter                          { get; set; }
 
@@ -96,10 +96,10 @@ namespace cloud.charging.apis.chargy
 
         public VerificationResult?  Status                         { get; set; }
 
-        public String               ErrorMessage                   { get; }
+        public String               ErrorMessage                   { get; set; }
 
 
-        public EMHCrypt01Result(Meter_Id?      MeterId                             = null,
+        public EMHCrypt01Result(Meter_Id?            MeterId                             = null,
                                 IMeter               Meter                               = null,
                                 DateTime?            Timestamp                           = null,
                                 String               InfoStatus                          = null,
@@ -146,6 +146,39 @@ namespace cloud.charging.apis.chargy
             this.Status                        = Status;
             this.ErrorMessage                  = ErrorMessage;
 
+        }
+
+
+        public EMHCrypt01Result SetMeter(IMeter Meter)
+        {
+            this.Meter = Meter;
+            return this;
+        }
+
+        public EMHCrypt01Result SetSHA256Value(String SHA256Value)
+        {
+            this.SHA256Value = SHA256Value;
+            return this;
+        }
+
+        public EMHCrypt01Result SetStatus(VerificationResult Status)
+        {
+            this.Status = Status;
+            return this;
+        }
+
+        public EMHCrypt01Result SetErrorMessage(String ErrorMessage)
+        {
+            this.ErrorMessage = ErrorMessage;
+            return this;
+        }
+
+        public EMHCrypt01Result SetError(VerificationResult  Status,
+                                         String              ErrorMessage)
+        {
+            this.Status       = Status;
+            this.ErrorMessage = ErrorMessage;
+            return this;
         }
 
     }

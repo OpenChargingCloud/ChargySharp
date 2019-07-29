@@ -24,15 +24,10 @@ using System;
 namespace cloud.charging.apis.chargy
 {
 
-    public enum VerificationResult
+    public enum PublicKeyFormats
     {
-        Error,
-        UnknownCTRFormat,
-        MeterNotFound,
-        PublicKeyNotFound,
-        InvalidPublicKey,
-        InvalidSignature,
-        ValidSignature
+        plain,
+        DER
     }
 
 }

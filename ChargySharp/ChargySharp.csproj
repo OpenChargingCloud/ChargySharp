@@ -45,11 +45,13 @@
   <ItemGroup>
     <Compile Include="Delegates.cs" />
     <Compile Include="ChargyLib.cs" />
+    <Compile Include="EMHCrypt01\ECKeyPair.cs" />
     <Compile Include="EMHCrypt01\EMHSessionCryptoResult.cs" />
     <Compile Include="CryptoResult.cs" />
     <Compile Include="EMHCrypt01\IEMHCrypt01Result.cs" />
     <Compile Include="EMHCrypt01\IEMHMeasurementValue.cs" />
     <Compile Include="EMHCrypt01\EMHCrypt01.cs" />
+    <Compile Include="EMHCrypt01\IEMHCrypt01_PublicKey.cs" />
     <Compile Include="Interfaces\IEMobilityProvider.cs" />
     <Compile Include="Interfaces\IAuthorization.cs" />
     <Compile Include="Interfaces\IECCSignature.cs" />
@@ -69,6 +71,8 @@
     <Compile Include="Interfaces\IChargeTransparencyRecord.cs" />
     <Compile Include="SimpleTypes\Meter_Id.cs" />
     <Compile Include="SimpleTypes\OBIS.cs" />
+    <Compile Include="SimpleTypes\PublicKeyFormats.cs" />
+    <Compile Include="SimpleTypes\MeterValueSignatureFormats.cs" />
     <Compile Include="SimpleTypes\SignatureFormats.cs" />
     <Compile Include="SimpleTypes\VerificationResult.cs" />
     <Compile Include="SimpleTypes\SessionVerificationResult.cs" />
@@ -80,6 +84,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\BouncyCastle\crypto\crypto.csproj">
+      <Project>{38872a5f-e87e-4fad-b109-8eb7b2e6a4a0}</Project>
+      <Name>crypto</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\Styx\Styx\Styx.csproj">
       <Project>{AF76ECC0-2CA5-4CFF-9E1E-FF5478C4B6E4}</Project>
       <Name>Styx</Name>

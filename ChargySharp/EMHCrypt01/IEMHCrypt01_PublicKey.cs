@@ -17,22 +17,20 @@
 
 #region Usings
 
+using Org.BouncyCastle.Crypto.Parameters;
 using System;
+using System.Collections.Generic;
 
 #endregion
 
 namespace cloud.charging.apis.chargy
 {
 
-    public enum VerificationResult
+    public interface IEMHCrypt01_PublicKey : IPublicKey
     {
-        Error,
-        UnknownCTRFormat,
-        MeterNotFound,
-        PublicKeyNotFound,
-        InvalidPublicKey,
-        InvalidSignature,
-        ValidSignature
+
+        ECPublicKeyParameters EMHPublicKey { get; }
+
     }
 
 }
