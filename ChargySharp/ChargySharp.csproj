@@ -43,8 +43,44 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="ChargySharp.cs" />
+    <Compile Include="ChargyLib.cs" />
+    <Compile Include="EMHCrypt01\EMHSessionCryptoResult.cs" />
+    <Compile Include="EMHCrypt01\IEMHCrypt01Result.cs" />
+    <Compile Include="EMHCrypt01\IEMHMeasurementValue.cs" />
+    <Compile Include="EMHCrypt01\EMHCrypt01.cs" />
+    <Compile Include="Interfaces\IEMobilityProvider.cs" />
+    <Compile Include="Interfaces\IAuthorization.cs" />
+    <Compile Include="Interfaces\IECCSignature.cs" />
+    <Compile Include="Interfaces\ISignature.cs" />
+    <Compile Include="Interfaces\IPublicKey.cs" />
+    <Compile Include="Interfaces\ISignatureInfos.cs" />
+    <Compile Include="Interfaces\IMeasurement.cs" />
+    <Compile Include="Interfaces\IMediationService.cs" />
+    <Compile Include="Interfaces\IChargingProduct.cs" />
+    <Compile Include="Interfaces\ITariff.cs" />
+    <Compile Include="Interfaces\IMeter.cs" />
+    <Compile Include="Interfaces\IEVSE.cs" />
+    <Compile Include="Interfaces\IChargingStation.cs" />
+    <Compile Include="Interfaces\IChargingPool.cs" />
+    <Compile Include="Interfaces\IChargingStationOperator.cs" />
+    <Compile Include="Interfaces\IContract.cs" />
+    <Compile Include="Interfaces\IChargeTransparencyRecord.cs" />
+    <Compile Include="SimpleTypes\OBIS.cs" />
+    <Compile Include="SimpleTypes\SignatureFormats.cs" />
+    <Compile Include="SimpleTypes\VerificationResult.cs" />
+    <Compile Include="SimpleTypes\SessionVerificationResult.cs" />
+    <Compile Include="Interfaces\IMeasurementValue.cs" />
+    <Compile Include="Interfaces\ICryptoResult.cs" />
+    <Compile Include="Interfaces\ISessionCryptoResult.cs" />
+    <Compile Include="Interfaces\IChargingSession.cs" />
+    <Compile Include="ACrypt.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\Styx\Styx\Styx.csproj">
+      <Project>{AF76ECC0-2CA5-4CFF-9E1E-FF5478C4B6E4}</Project>
+      <Name>Styx</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
