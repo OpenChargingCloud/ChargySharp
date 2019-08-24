@@ -27,7 +27,7 @@ namespace cloud.charging.apis.chargy
 {
 
     /// <summary>
-    /// The unique identification of an OBIS.
+    /// The unique identification of an OBIS identification.
     /// </summary>
     public struct OBIS : IId,
                          IEquatable <OBIS>,
@@ -55,6 +55,18 @@ namespace cloud.charging.apis.chargy
         #endregion
 
         #region Properties
+
+        /// <summary>
+        /// Indicates whether this identification is null or empty.
+        /// </summary>
+        public Boolean IsNullOrEmpty
+            => false;
+
+        /// <summary>
+        /// The length of the meter identificator.
+        /// </summary>
+        public UInt64 Length
+            => 6;
 
         public Byte Media       { get; } // A
         public Byte Channel     { get; } // B

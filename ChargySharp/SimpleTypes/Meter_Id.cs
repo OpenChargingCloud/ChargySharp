@@ -49,6 +49,12 @@ namespace cloud.charging.apis.chargy
         #region Properties
 
         /// <summary>
+        /// Indicates whether this identification is null or empty.
+        /// </summary>
+        public Boolean IsNullOrEmpty
+            => InternalId.IsNullOrEmpty();
+
+        /// <summary>
         /// The length of the meter identificator.
         /// </summary>
         public UInt64 Length
@@ -123,8 +129,8 @@ namespace cloud.charging.apis.chargy
         /// Try to parse the given string as a meter identification.
         /// </summary>
         /// <param name="Text">A text representation of a meter identification.</param>
-        /// <param name="EnergyMeterId">The parsed meter identification.</param>
-        public static Boolean TryParse(String Text, out Meter_Id EnergyMeterId)
+        /// <param name="MeterId">The parsed meter identification.</param>
+        public static Boolean TryParse(String Text, out Meter_Id MeterId)
         {
 
             #region Initial checks
@@ -134,7 +140,7 @@ namespace cloud.charging.apis.chargy
 
             if (Text.IsNullOrEmpty())
             {
-                EnergyMeterId = default;
+                MeterId = default;
                 return false;
             }
 
@@ -142,13 +148,13 @@ namespace cloud.charging.apis.chargy
 
             try
             {
-                EnergyMeterId = new Meter_Id(Text);
+                MeterId = new Meter_Id(Text);
                 return true;
             }
             catch (Exception)
             { }
 
-            EnergyMeterId = default;
+            MeterId = default;
             return false;
 
         }
